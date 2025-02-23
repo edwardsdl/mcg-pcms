@@ -9,7 +9,6 @@ public interface IPatientRepository
     Task UpdatePatientAsync(Patient patient);
     
     Task AddClinicalAttachmentAsync(Patient patient, string filename, byte[] bytes);
-    Task<IEnumerable<ClinicalAttachment>> GetClinicalAttachmentsAsync(Patient patient);
     Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string filename);
     Task RemoveClinicalAttachmentAsync(Patient patient, string filename);
 }

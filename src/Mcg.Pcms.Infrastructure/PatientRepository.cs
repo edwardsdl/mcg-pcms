@@ -68,15 +68,6 @@ public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
         await Task.CompletedTask;
     }
 
-    public async Task<IEnumerable<ClinicalAttachment>> GetClinicalAttachmentsAsync(Patient patient)
-    {
-        var clinicalAttachments = BlobStorage.GetOrAdd(patient.Id, []);
-
-        // Any implementation of this method written against real blob storage will be handled asynchronously. If we
-        // fake it now, we can avoid changing the method signature and dealing with the ripple effects it would cause.
-        return await Task.FromResult(clinicalAttachments);
-    }
-
     public async Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string filename)
     {
         var clinicalAttachments = BlobStorage.GetOrAdd(patient.Id, []);

@@ -226,38 +226,6 @@ public class PatientRepositoryTests
     }
 
     [Fact]
-    public async Task GetClinicalAttachmentsAsync_MustGetAttachments_WhenAttachmentsExist()
-    {
-        // Arrange
-        var repository = GetRepository();
-        var patient = GetJohnDoe();
-        await repository.AddPatientAsync(patient);
-        await repository.AddClinicalAttachmentAsync(patient, "Clinical Attachment 1", GetClinicalAttachment());
-        await repository.AddClinicalAttachmentAsync(patient, "Clinical Attachment 2", GetClinicalAttachment());
-
-        // Act
-        var clinicalAttachments = await repository.GetClinicalAttachmentsAsync(patient);
-
-        // Assert
-        Assert.Equal(2, clinicalAttachments.Count());
-    }
-    
-    [Fact]
-    public async Task GetClinicalAttachmentsAsync_MustNotGetAttachments_WhenAttachmentsDoNotExist()
-    {
-        // Arrange
-        var repository = GetRepository();
-        var patient = GetJohnDoe();
-        await repository.AddPatientAsync(patient);
-
-        // Act
-        var clinicalAttachments = await repository.GetClinicalAttachmentsAsync(patient);
-
-        // Assert
-        Assert.Empty(clinicalAttachments);
-    }
-
-    [Fact]
     public async Task RemoveClinicalAttachmentAsync_MustRemoveAttachment_WhenGivenMatchingFilename()
     {
         // Arrange
