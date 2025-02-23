@@ -3,9 +3,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mcg.Pcms.Core;
 
+public record CreatePatientRequest(
+    string Name,
+    int Age,
+    string PhoneNumber,
+    string EmailAddress,
+    string Address,
+    string MedicalHistory
+);
+
+public record UpdatePatientRequest(
+    string Name,
+    int Age,
+    string PhoneNumber,
+    string EmailAddress,
+    string Address,
+    string MedicalHistory
+);
+
 public class Patient
 {
-    [Key] public Guid Id { get; set; }
+    [Key] public Guid Id { get; private set; }
 
     [Required] public required string Address { get; set; }
 
@@ -21,3 +39,5 @@ public class Patient
 
     [Required] [Phone] public required string PhoneNumber { get; set; }
 }
+
+public record ClinicalAttachment(string Filename, byte[] Data);
