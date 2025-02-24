@@ -52,7 +52,6 @@ public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
     public async Task UpdatePatientAsync(Patient patient)
     {
         DbContext.Patients.Update(patient);
-
         await DbContext.SaveChangesAsync();
     }
 

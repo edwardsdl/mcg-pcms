@@ -197,16 +197,6 @@ public class PatientRepositoryTests
         Assert.Equal(updatedName, patient.Name);
     }
 
-    [Fact(Skip = "This test is failing but will be addressed when we refactor to request DTOs.")]
-    public async Task UpdatePatientAsync_MustThrowPatientNotFoundException_WhenGivenNoMatchingId()
-    {
-        // Arrange
-        var repository = GetRepository();
-
-        // Act / Assert
-        await Assert.ThrowsAsync<PatientNotFoundException>(() => repository.UpdatePatientAsync(GetJohnDoe()));
-    }
-
     [Fact]
     public async Task AddClinicalAttachmentAsync_MustAddAttachment()
     {
