@@ -1,8 +1,10 @@
-﻿using System.Text;
+﻿using System.Collections;
+using System.Text;
 using Mcg.Pcms.Core;
+using Mcg.Pcms.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Mcg.Pcms.Infrastructure.Tests;
+namespace Mcg.Pcms.Tests;
 
 public class PatientRepositoryTests
 {
@@ -147,7 +149,7 @@ public class PatientRepositoryTests
         var foundPatients = await repository.FindPatientsAsync("Schmoe");
 
         // Assert
-        Assert.Empty(foundPatients);
+        Assert.Empty((IEnumerable)foundPatients);
     }
 
     [Fact]
@@ -194,7 +196,7 @@ public class PatientRepositoryTests
 
         // Assert
         Assert.Equal(originalId, patient.Id);
-        Assert.Equal(updatedName, patient.Name);
+        Assert.Equal((string?)updatedName, (string?)patient.Name);
     }
 
     [Fact]
