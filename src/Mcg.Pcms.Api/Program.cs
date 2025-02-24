@@ -16,6 +16,12 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Services.AddSerilog();
 
+// Configure HTTP server
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5016); // Listen on all network interfaces
+});
+
 // Configure authentication and authorization
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<PatientDbContext>()
@@ -37,19 +43,15 @@ builder.Services.AddScoped<PatientService>();
 try
 {
     Log.Information("Application started");
-    
+
     var app = builder.Build();
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.MapOpenApi();
-        app.MapScalarApiReference();
-        app.UseDeveloperExceptionPage();
-    }
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.UseDeveloperExceptionPage();
 
     app.MapPost("/patients",
         async ([FromBody] CreatePatientRequest createPatientRequest, PatientService patientService) =>
