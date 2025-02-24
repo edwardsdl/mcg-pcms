@@ -40,4 +40,4 @@ public class Patient
     [Required] [Phone] public required string PhoneNumber { get; set; }
 }
 
-public record ClinicalAttachment(string Filename, byte[] Data);
+public record ClinicalAttachment(string FileName, string ContentType, byte[] FileContents);

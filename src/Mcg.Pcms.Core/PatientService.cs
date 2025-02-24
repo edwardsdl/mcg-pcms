@@ -47,21 +47,21 @@ public class PatientService(IPatientRepository repository)
         await Repository.RemovePatientAsync(id);
     }
 
-    public async Task CreateAttachmentAsync(Guid patientId, string filename, byte[] bytes)
+    public async Task CreateAttachmentAsync(Guid patientId, string fileName, string contentType, byte[] fileContents)
     {
         var patient = await GetPatientAsync(patientId);
-        await Repository.AddClinicalAttachmentAsync(patient, filename, bytes);
+        await Repository.AddClinicalAttachmentAsync(patient, fileName, contentType, fileContents);
     }
     
-    public async Task<ClinicalAttachment> GetAttachmentAsync(Guid patientId, string filename)
+    public async Task<ClinicalAttachment> GetAttachmentAsync(Guid patientId, string fileName)
     {
         var patient = await GetPatientAsync(patientId);
-        return await Repository.GetClinicalAttachmentAsync(patient, filename);
+        return await Repository.GetClinicalAttachmentAsync(patient, fileName);
     }
 
-    public async Task DeleteAttachmentAsync(Guid patientId, string filename)
+    public async Task DeleteAttachmentAsync(Guid patientId, string fileName)
     {
         var patient = await GetPatientAsync(patientId);
-        await Repository.RemoveClinicalAttachmentAsync(patient, filename);
+        await Repository.RemoveClinicalAttachmentAsync(patient, fileName);
     }
 }

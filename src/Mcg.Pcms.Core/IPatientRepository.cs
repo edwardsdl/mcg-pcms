@@ -8,7 +8,7 @@ public interface IPatientRepository
     Task<Patient> GetPatientAsync(Guid patientId);
     Task UpdatePatientAsync(Patient patient);
     
-    Task AddClinicalAttachmentAsync(Patient patient, string filename, byte[] bytes);
-    Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string filename);
-    Task RemoveClinicalAttachmentAsync(Patient patient, string filename);
+    Task AddClinicalAttachmentAsync(Patient patient, string fileName, string contentType, byte[] fileContents);
+    Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string fileName);
+    Task RemoveClinicalAttachmentAsync(Patient patient, string fileName);
 }

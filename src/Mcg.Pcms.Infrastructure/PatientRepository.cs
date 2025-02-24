@@ -55,10 +55,10 @@ public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
         await DbContext.SaveChangesAsync();
     }
 
-    public async Task AddClinicalAttachmentAsync(Patient patient, string filename, byte[] bytes)
+    public async Task AddClinicalAttachmentAsync(Patient patient, string fileName, string contentType, byte[] fileContents)
     {
         var clinicalAttachments = BlobStorage.GetOrAdd(patient.Id, []);
-        clinicalAttachments.Add(new ClinicalAttachment(filename, bytes));
+        clinicalAttachments.Add(new ClinicalAttachment(fileName, contentType, fileContents));
 
         PopulateClinicalAttachments([patient]);
 
@@ -67,22 +67,22 @@ public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
         await Task.CompletedTask;
     }
 
-    public async Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string filename)
+    public async Task<ClinicalAttachment> GetClinicalAttachmentAsync(Patient patient, string fileName)
     {
         var clinicalAttachments = BlobStorage.GetOrAdd(patient.Id, []);
-        var clinicalAttachment = clinicalAttachments.FirstOrDefault(ca => ca.Filename == filename);
-        if (clinicalAttachment == null) throw new ClinicalAttachmentNotFoundException(filename);
+        var clinicalAttachment = clinicalAttachments.FirstOrDefault(ca => ca.FileName == fileName);
+        if (clinicalAttachment == null) throw new ClinicalAttachmentNotFoundException(fileName);
 
         // Any implementation of this method written against real blob storage will be handled asynchronously. If we
         // fake it now, we can avoid changing the method signature and dealing with the ripple effects it would cause.
         return await Task.FromResult(clinicalAttachment);
     }
 
-    public async Task RemoveClinicalAttachmentAsync(Patient patient, string filename)
+    public async Task RemoveClinicalAttachmentAsync(Patient patient, string fileName)
     {
         var clinicalAttachments = BlobStorage.GetOrAdd(patient.Id, []);
-        var numRemovedClinicalAttachments = clinicalAttachments.RemoveAll(ca => ca.Filename == filename);
-        if (numRemovedClinicalAttachments == 0) throw new ClinicalAttachmentNotFoundException(filename);
+        var numRemovedClinicalAttachments = clinicalAttachments.RemoveAll(ca => ca.FileName == fileName);
+        if (numRemovedClinicalAttachments == 0) throw new ClinicalAttachmentNotFoundException(fileName);
 
         // Any implementation of this method written against real blob storage will be handled asynchronously. If we
         // fake it now, we can avoid changing the method signature and dealing with the ripple effects it would cause.
@@ -95,7 +95,7 @@ public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
         {
             if (BlobStorage.TryGetValue(patient.Id, out var clinicalAttachments))
             {
-                patient.ClinicalAttachments = clinicalAttachments.Select(ca => ca.Filename);
+                patient.ClinicalAttachments = clinicalAttachments.Select(ca => ca.FileName);
             }
         }
     }

@@ -51,11 +51,11 @@ app.MapGet("/patients", async (string? query, PatientService patientService) =>
     return Results.Ok(patients);
 });
 
-app.MapGet("/patients/{id:guid}", async (Guid id, PatientService patientService) =>
+app.MapGet("/patients/{patientId:guid}", async (Guid patientId, PatientService patientService) =>
 {
     try
     {
-        var patient = await patientService.GetPatientAsync(id);
+        var patient = await patientService.GetPatientAsync(patientId);
         return Results.Ok(patient);
     }
     catch (PatientNotFoundException)
@@ -64,12 +64,12 @@ app.MapGet("/patients/{id:guid}", async (Guid id, PatientService patientService)
     }
 });
 
-app.MapPut("/patients/{id:guid}",
-    async (Guid id, [FromBody] UpdatePatientRequest updatePatientRequest, PatientService patientService) =>
+app.MapPut("/patients/{patientId:guid}",
+    async (Guid patientId, [FromBody] UpdatePatientRequest updatePatientRequest, PatientService patientService) =>
     {
         try
         {
-            await patientService.UpdatePatientAsync(id, updatePatientRequest);
+            await patientService.UpdatePatientAsync(patientId, updatePatientRequest);
             return Results.NoContent();
         }
         catch (PatientNotFoundException)
@@ -78,11 +78,11 @@ app.MapPut("/patients/{id:guid}",
         }
     });
 
-app.MapDelete("/patients/{id:guid}", async (Guid id, PatientService patientService) =>
+app.MapDelete("/patients/{patientId:guid}", async (Guid patientId, PatientService patientService) =>
 {
     try
     {
-        await patientService.DeletePatientAsync(id);
+        await patientService.DeletePatientAsync(patientId);
         return Results.NoContent();
     }
     catch (PatientNotFoundException)
@@ -91,30 +91,26 @@ app.MapDelete("/patients/{id:guid}", async (Guid id, PatientService patientServi
     }
 });
 
-app.MapPost("/patients/{patientId}/attachments",
-    async (Guid patientId, HttpRequest request, PatientService patientService) =>
-    {
-        var formFile = request.Form.Files.FirstOrDefault();
-        if (formFile is null || formFile.Length == 0)
+app.MapPost("/patients/{patientId:guid}/attachments",
+        async (Guid patientId, [FromForm] IFormFile file, PatientService patientService) =>
         {
-            return Results.BadRequest("No file uploaded.");
-        }
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var fileContents = memoryStream.ToArray();
 
-        using var memoryStream = new MemoryStream();
-        await formFile.CopyToAsync(memoryStream);
-        var fileBytes = memoryStream.ToArray();
+            await patientService.CreateAttachmentAsync(patientId, file.FileName, file.ContentType, fileContents);
 
-        await patientService.CreateAttachmentAsync(patientId, formFile.FileName, fileBytes);
-        return Results.Created($"/patients/{patientId}/attachments/{formFile.FileName}", null);
-    });
+            return Results.Created($"/patients/{patientId}/attachments/{file.FileName}", null);
+        })
+    .DisableAntiforgery();
 
-app.MapGet("/patients/{patientId:guid}/attachments/{filename}",
-    async (Guid patientId, string filename, PatientService patientService) =>
+app.MapGet("/patients/{patientId:guid}/attachments/{fileName}",
+    async (Guid patientId, string fileName, PatientService patientService) =>
     {
         try
         {
-            var clinicalAttachment = await patientService.GetAttachmentAsync(patientId, filename);
-            return Results.File(clinicalAttachment.Data, "application/octet-stream", filename);
+            var clinicalAttachment = await patientService.GetAttachmentAsync(patientId, fileName);
+            return Results.File(clinicalAttachment.FileContents, clinicalAttachment.ContentType, fileName);
         }
         catch (ClinicalAttachmentNotFoundException)
         {
@@ -126,12 +122,12 @@ app.MapGet("/patients/{patientId:guid}/attachments/{filename}",
         }
     });
 
-app.MapDelete("/patients/{patientId:guid}/attachments/{filename}",
-    async (Guid patientId, string filename, PatientService patientService) =>
+app.MapDelete("/patients/{patientId:guid}/attachments/{fileName}",
+    async (Guid patientId, string fileName, PatientService patientService) =>
     {
         try
         {
-            await patientService.DeleteAttachmentAsync(patientId, filename);
+            await patientService.DeleteAttachmentAsync(patientId, fileName);
             return Results.NoContent();
         }
         catch (ClinicalAttachmentNotFoundException)

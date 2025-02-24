@@ -207,13 +207,14 @@ public class PatientRepositoryTests
         var patient = GetJohnDoe();
         await repository.AddPatientAsync(patient);
         
-        const string filename = "Clinical Attachment";
+        const string fileName = "Clinical Attachment";
+        const string contentType = "application/pdf";
 
         // Act
-        await repository.AddClinicalAttachmentAsync(patient, filename, GetClinicalAttachment());
+        await repository.AddClinicalAttachmentAsync(patient, fileName, contentType, GetClinicalAttachment());
 
         // Assert
-        var clinicalAttachment = await repository.GetClinicalAttachmentAsync(patient, filename);
+        var clinicalAttachment = await repository.GetClinicalAttachmentAsync(patient, fileName);
         Assert.NotNull(clinicalAttachment);
     }
 
@@ -223,16 +224,17 @@ public class PatientRepositoryTests
         // Arrange
         var repository = GetRepository();
         var patient = GetJohnDoe();
-        const string filename = "Clinical Attachment";
+        const string fileName = "Clinical Attachment";
+        const string contentType = "application/pdf";
         
         await repository.AddPatientAsync(patient);
-        await repository.AddClinicalAttachmentAsync(patient, filename, GetClinicalAttachment());
+        await repository.AddClinicalAttachmentAsync(patient, fileName, contentType, GetClinicalAttachment());
 
         // Act
-        await repository.RemoveClinicalAttachmentAsync(patient, filename);
+        await repository.RemoveClinicalAttachmentAsync(patient, fileName);
 
         // Assert
-        await Assert.ThrowsAsync<ClinicalAttachmentNotFoundException>(() =>  repository.GetClinicalAttachmentAsync(patient, filename));
+        await Assert.ThrowsAsync<ClinicalAttachmentNotFoundException>(() =>  repository.GetClinicalAttachmentAsync(patient, fileName));
     }
     
     [Fact]
