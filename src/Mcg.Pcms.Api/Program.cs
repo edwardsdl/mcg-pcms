@@ -1,3 +1,4 @@
+using System.Net;
 using Mcg.Pcms.Core;
 using Mcg.Pcms.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,7 +20,7 @@ builder.Services.AddSerilog();
 // Configure HTTP server
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(5016); // Listen on all network interfaces
+    options.ListenAnyIP(5016);
 });
 
 // Configure authentication and authorization
@@ -32,6 +33,14 @@ builder.Services.AddAuthorization();
 
 // Configure Open API
 builder.Services.AddOpenApi();
+
+// Configure Scalar
+builder.Services.Configure<ScalarOptions>(options =>
+{
+    options.HideModels = true;
+    options.HideClientButton = true;
+    options.AddServer(new ScalarServer("http://localhost:5016"));
+});
 
 // Configure persistence
 builder.Services.AddDbContext<PatientDbContext>(options => options.UseInMemoryDatabase("pcms"));
@@ -50,7 +59,7 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference("/");
     app.UseDeveloperExceptionPage();
 
     app.MapPost("/patients",
