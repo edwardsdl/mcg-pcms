@@ -69,17 +69,14 @@ The **Infrastructure Layer**, implemented in `Mcg.Pcms.Infrastructure`, provides
 It uses Entity Framework Core with an in-memory database for storing patient records. Additionally, it simulates blob
 storage using a `ConcurrentDictionary`, which lazily initializes storage upon the first attachment being added.
 
-### System Diagram
+### C4 System Context Diagram
+![system_context_diagram.png](docs/system_context_diagram.png)
 
-```
-+----------------------+     +----------------------+     +------------------------+
-|  API Layer           | --> |  Core Layer          | --> |  Infrastructure Layer  |
-|  (Minimal API)       |     |  (Business Logic)    |     |  (EF Core, Storage)    |
-+----------------------+     +----------------------+     +------------------------+
-```
+### C4 Container Diagram
+![container_diagram.png](docs/container_diagram.png)
 
-The API Layer communicates with the Core Layer, which delegates data operations to the Infrastructure Layer.
-Authentication is handled via JWT and Identity.
+### C4 Component Diagram
+![component_diagram.png](docs/component_diagram.png)
 
 ## Design Considerations & Trade-Offs
 
