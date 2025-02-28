@@ -3,16 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mcg.Pcms.Core;
 
-public record CreatePatientRequest(
-    string Name,
-    int Age,
-    string PhoneNumber,
-    string EmailAddress,
-    string Address,
-    string MedicalHistory
-);
-
-public record UpdatePatientRequest(
+public record PatientDto(
     string Name,
     int Age,
     string PhoneNumber,
@@ -23,7 +14,7 @@ public record UpdatePatientRequest(
 
 public class Patient
 {
-    [Key] public Guid Id { get; private set; }
+    [Key] public Guid Id { get; init; }
 
     [Required] public required string Address { get; set; }
 

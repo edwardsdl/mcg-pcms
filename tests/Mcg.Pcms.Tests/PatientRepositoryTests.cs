@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Text;
 using Mcg.Pcms.Core;
 using Mcg.Pcms.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -8,60 +7,6 @@ namespace Mcg.Pcms.Tests;
 
 public class PatientRepositoryTests
 {
-    private PatientRepository GetRepository()
-    {
-        // We want a unique in-memory database for each test. 
-        var options = new DbContextOptionsBuilder<PatientDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        var dbContext = new PatientDbContext(options);
-
-        return new PatientRepository(dbContext);
-    }
-
-    private Patient GetJohnDoe()
-    {
-        return new Patient
-        {
-            Address = "123 Main Street",
-            Age = 65,
-            EmailAddress = "john.doe@example.com",
-            MedicalHistory = "No pre-existing conditions.",
-            Name = "John Doe",
-            PhoneNumber = "(888) 555-1212"
-        };
-    }
-
-    private Patient GetJaneDoe()
-    {
-        return new Patient
-        {
-            Address = "123 Main Street",
-            Age = 60,
-            EmailAddress = "jane.doe@example.com",
-            MedicalHistory = "No pre-existing conditions.",
-            Name = "John Doe",
-            PhoneNumber = "(888) 555-1212"
-        };
-    }
-
-    private Patient GetJohnSmith()
-    {
-        return new Patient
-        {
-            Address = "456 Main Street",
-            Age = 20,
-            EmailAddress = "john.smith@example.com",
-            MedicalHistory = "No pre-existing conditions.",
-            Name = "John Smith",
-            PhoneNumber = "(123) 456-7890"
-        };
-    }
-
-    private byte[] GetClinicalAttachment()
-    {
-        return Encoding.UTF8.GetBytes("Clinical Attachment");
-    }
-
     [Fact]
     public async Task AddPatientAsync_MustSavePatient()
     {
@@ -149,7 +94,7 @@ public class PatientRepositoryTests
         var foundPatients = await repository.FindPatientsAsync("Schmoe");
 
         // Assert
-        Assert.Empty((IEnumerable)foundPatients);
+        Assert.Empty(foundPatients);
     }
 
     [Fact]
@@ -236,7 +181,7 @@ public class PatientRepositoryTests
         // Assert
         await Assert.ThrowsAsync<ClinicalAttachmentNotFoundException>(() =>  repository.GetClinicalAttachmentAsync(patient, fileName));
     }
-    
+
     [Fact]
     public async Task RemoveClinicalAttachmentAsync_MustThrowClinicalAttachmentNotFoundException_WhenGivenNoMatchingFilename()
     {
@@ -248,5 +193,59 @@ public class PatientRepositoryTests
         // Act / Assert
         await Assert.ThrowsAsync<ClinicalAttachmentNotFoundException>(() =>
             repository.RemoveClinicalAttachmentAsync(patient, "Clinical Attachment"));
+    }
+
+    private PatientRepository GetRepository()
+    {
+        // We want a unique in-memory database for each test. 
+        var options = new DbContextOptionsBuilder<PatientDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var dbContext = new PatientDbContext(options);
+
+        return new PatientRepository(dbContext);
+    }
+
+    private Patient GetJohnDoe()
+    {
+        return new Patient
+        {
+            Address = "123 Main Street",
+            Age = 65,
+            EmailAddress = "john.doe@example.com",
+            MedicalHistory = "No pre-existing conditions.",
+            Name = "John Doe",
+            PhoneNumber = "(888) 555-1212"
+        };
+    }
+
+    private Patient GetJaneDoe()
+    {
+        return new Patient
+        {
+            Address = "123 Main Street",
+            Age = 60,
+            EmailAddress = "jane.doe@example.com",
+            MedicalHistory = "No pre-existing conditions.",
+            Name = "John Doe",
+            PhoneNumber = "(888) 555-1212"
+        };
+    }
+
+    private Patient GetJohnSmith()
+    {
+        return new Patient
+        {
+            Address = "456 Main Street",
+            Age = 20,
+            EmailAddress = "john.smith@example.com",
+            MedicalHistory = "No pre-existing conditions.",
+            Name = "John Smith",
+            PhoneNumber = "(123) 456-7890"
+        };
+    }
+
+    private byte[] GetClinicalAttachment()
+    {
+        return "Clinical Attachment"u8.ToArray();
     }
 }

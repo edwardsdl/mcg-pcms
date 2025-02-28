@@ -62,9 +62,9 @@ try
     app.UseDeveloperExceptionPage();
 
     app.MapPost("/patients",
-        async ([FromBody] CreatePatientRequest createPatientRequest, PatientService patientService) =>
+        async ([FromBody] PatientDto patientDto, PatientService patientService) =>
         {
-            var createdPatient = await patientService.CreatePatientAsync(createPatientRequest);
+            var createdPatient = await patientService.CreatePatientAsync(patientDto);
             return Results.Created($"/patients/{createdPatient.Id}", createdPatient);
         });
 
@@ -88,11 +88,11 @@ try
     });
 
     app.MapPut("/patients/{patientId:guid}",
-        async (Guid patientId, [FromBody] UpdatePatientRequest updatePatientRequest, PatientService patientService) =>
+        async (Guid patientId, [FromBody] PatientDto patientDto, PatientService patientService) =>
         {
             try
             {
-                await patientService.UpdatePatientAsync(patientId, updatePatientRequest);
+                await patientService.UpdatePatientAsync(patientId, patientDto);
                 return Results.NoContent();
             }
             catch (PatientNotFoundException)

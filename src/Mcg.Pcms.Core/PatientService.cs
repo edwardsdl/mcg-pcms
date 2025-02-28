@@ -7,18 +7,18 @@ public class PatientService(IPatientRepository repository, ILogger<PatientServic
     private IPatientRepository Repository { get; } = repository;
     private ILogger<PatientService> Logger { get; } = logger;
 
-    public async Task<Patient> CreatePatientAsync(CreatePatientRequest createPatientRequest)
+    public async Task<Patient> CreatePatientAsync(PatientDto patientDto)
     {
         Logger.LogInformation("Creating patient");
 
         var patient = new Patient
         {
-            Address = createPatientRequest.Address,
-            Age = createPatientRequest.Age,
-            EmailAddress = createPatientRequest.EmailAddress,
-            MedicalHistory = createPatientRequest.MedicalHistory,
-            Name = createPatientRequest.Name,
-            PhoneNumber = createPatientRequest.PhoneNumber
+            Address = patientDto.Address,
+            Age = patientDto.Age,
+            EmailAddress = patientDto.EmailAddress,
+            MedicalHistory = patientDto.MedicalHistory,
+            Name = patientDto.Name,
+            PhoneNumber = patientDto.PhoneNumber
         };
 
         return await Repository.AddPatientAsync(patient);
@@ -38,17 +38,17 @@ public class PatientService(IPatientRepository repository, ILogger<PatientServic
         return await Repository.GetPatientAsync(patientId);
     }
 
-    public async Task UpdatePatientAsync(Guid patientId, UpdatePatientRequest updatePatientRequest)
+    public async Task UpdatePatientAsync(Guid patientId, PatientDto patientDto)
     {
         Logger.LogInformation("Updating patient with id {patientId}", patientId);
 
         var patient = await Repository.GetPatientAsync(patientId);
-        patient.Address = updatePatientRequest.Address;
-        patient.Age = updatePatientRequest.Age;
-        patient.EmailAddress = updatePatientRequest.EmailAddress;
-        patient.MedicalHistory = updatePatientRequest.MedicalHistory;
-        patient.Name = updatePatientRequest.Name;
-        patient.PhoneNumber = updatePatientRequest.PhoneNumber;
+        patient.Address = patientDto.Address;
+        patient.Age = patientDto.Age;
+        patient.EmailAddress = patientDto.EmailAddress;
+        patient.MedicalHistory = patientDto.MedicalHistory;
+        patient.Name = patientDto.Name;
+        patient.PhoneNumber = patientDto.PhoneNumber;
 
         await Repository.UpdatePatientAsync(patient);
     }
