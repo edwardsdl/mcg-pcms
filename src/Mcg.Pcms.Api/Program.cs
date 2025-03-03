@@ -48,13 +48,11 @@ try
 
     var app = builder.Build();
     app.UseSerilogRequestLogging();
-    app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapIdentityApi<IdentityUser>();
     app.MapOpenApi();
     app.MapScalarApiReference("/");
-    app.UseDeveloperExceptionPage();
 
     // For more information about configuring authorization policies, see
     // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-9.0#configuring-authorization-policies-in-minimal-apps
