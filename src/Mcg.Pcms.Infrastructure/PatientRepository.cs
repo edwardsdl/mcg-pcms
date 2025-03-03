@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mcg.Pcms.Infrastructure;
 
-public class PatientRepository(PatientDbContext dbContext) : IPatientRepository
+public class PatientRepository(AppDbContext dbContext) : IPatientRepository
 {
     private static ConcurrentDictionary<Guid, List<ClinicalAttachment>> BlobStorage { get; } = new();
-    private PatientDbContext DbContext { get; } = dbContext;
+    private AppDbContext DbContext { get; } = dbContext;
 
     public async Task<Patient> AddPatientAsync(Patient patient)
     {

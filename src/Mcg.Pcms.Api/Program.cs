@@ -1,6 +1,5 @@
 using Mcg.Pcms.Core;
 using Mcg.Pcms.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,17 +16,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddSerilog();
 
 // Configure HTTP server
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5016);
-});
+builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(5016); });
 
 // Configure authentication and authorization
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<PatientDbContext>()
-    .AddDefaultTokenProviders();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options => options.RequireHttpsMetadata = true);
+builder.Services
+    .AddIdentityApiEndpoints<IdentityUser>()
+    .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthorization();
 
 // Configure Open API
@@ -42,7 +36,7 @@ builder.Services.Configure<ScalarOptions>(options =>
 });
 
 // Configure persistence
-builder.Services.AddDbContext<PatientDbContext>(options => options.UseInMemoryDatabase("pcms"));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("pcms"));
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
 // Configure other services
@@ -57,63 +51,74 @@ try
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.MapIdentityApi<IdentityUser>();
     app.MapOpenApi();
     app.MapScalarApiReference("/");
     app.UseDeveloperExceptionPage();
 
+    // For more information about configuring authorization policies, see
+    // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-9.0#configuring-authorization-policies-in-minimal-apps
+
     app.MapPost("/patients",
-        async ([FromBody] PatientDto patientDto, PatientService patientService) =>
-        {
-            var createdPatient = await patientService.CreatePatientAsync(patientDto);
-            return Results.Created($"/patients/{createdPatient.Id}", createdPatient);
-        });
+            async ([FromBody] PatientDto patientDto, PatientService patientService) =>
+            {
+                var createdPatient = await patientService.CreatePatientAsync(patientDto);
+                return Results.Created($"/patients/{createdPatient.Id}", createdPatient);
+            })
+        .RequireAuthorization();
 
     app.MapGet("/patients", async (string? query, PatientService patientService) =>
-    {
-        var patients = await patientService.FindPatientsAsync(query);
-        return Results.Ok(patients);
-    });
+        {
+            var patients = await patientService.FindPatientsAsync(query);
+            return Results.Ok(patients);
+        })
+        .RequireAuthorization();
 
     app.MapGet("/patients/{patientId:guid}", async (Guid patientId, PatientService patientService) =>
-    {
-        try
-        {
-            var patient = await patientService.GetPatientAsync(patientId);
-            return Results.Ok(patient);
-        }
-        catch (PatientNotFoundException)
-        {
-            return Results.NotFound();
-        }
-    });
-
-    app.MapPut("/patients/{patientId:guid}",
-        async (Guid patientId, [FromBody] PatientDto patientDto, PatientService patientService) =>
         {
             try
             {
-                await patientService.UpdatePatientAsync(patientId, patientDto);
+                var patient = await patientService.GetPatientAsync(patientId);
+                return Results.Ok(patient);
+            }
+            catch (PatientNotFoundException)
+            {
+                return Results.NotFound();
+            }
+        })
+        .RequireAuthorization();
+
+    app.MapPut("/patients/{patientId:guid}",
+            async (Guid patientId, [FromBody] PatientDto patientDto, PatientService patientService) =>
+            {
+                try
+                {
+                    await patientService.UpdatePatientAsync(patientId, patientDto);
+                    return Results.NoContent();
+                }
+                catch (PatientNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+            })
+        .RequireAuthorization();
+
+    app.MapDelete("/patients/{patientId:guid}", async (Guid patientId, PatientService patientService) =>
+        {
+            try
+            {
+                await patientService.DeletePatientAsync(patientId);
                 return Results.NoContent();
             }
             catch (PatientNotFoundException)
             {
                 return Results.NotFound();
             }
-        });
+        })
+        .RequireAuthorization();
 
-    app.MapDelete("/patients/{patientId:guid}", async (Guid patientId, PatientService patientService) =>
-    {
-        try
-        {
-            await patientService.DeletePatientAsync(patientId);
-            return Results.NoContent();
-        }
-        catch (PatientNotFoundException)
-        {
-            return Results.NotFound();
-        }
-    });
-
+    // By default, CSRF protection is enabled for endpoints that accept IFormFile. Since we're using bearer tokens and
+    // not session cookies, we don't need this protection, and it can be disabled.
     app.MapPost("/patients/{patientId:guid}/attachments",
             async (Guid patientId, [FromForm] IFormFile file, PatientService patientService) =>
             {
@@ -125,43 +130,46 @@ try
 
                 return Results.Created($"/patients/{patientId}/attachments/{file.FileName}", null);
             })
-        .DisableAntiforgery();
+        .DisableAntiforgery()
+        .RequireAuthorization();
 
     app.MapGet("/patients/{patientId:guid}/attachments/{fileName}",
-        async (Guid patientId, string fileName, PatientService patientService) =>
-        {
-            try
+            async (Guid patientId, string fileName, PatientService patientService) =>
             {
-                var clinicalAttachment = await patientService.GetAttachmentAsync(patientId, fileName);
-                return Results.File(clinicalAttachment.FileContents, clinicalAttachment.ContentType, fileName);
-            }
-            catch (ClinicalAttachmentNotFoundException)
-            {
-                return Results.NotFound();
-            }
-            catch (PatientNotFoundException)
-            {
-                return Results.NotFound();
-            }
-        });
+                try
+                {
+                    var clinicalAttachment = await patientService.GetAttachmentAsync(patientId, fileName);
+                    return Results.File(clinicalAttachment.FileContents, clinicalAttachment.ContentType, fileName);
+                }
+                catch (ClinicalAttachmentNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+                catch (PatientNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+            })
+        .RequireAuthorization();
 
     app.MapDelete("/patients/{patientId:guid}/attachments/{fileName}",
-        async (Guid patientId, string fileName, PatientService patientService) =>
-        {
-            try
+            async (Guid patientId, string fileName, PatientService patientService) =>
             {
-                await patientService.DeleteAttachmentAsync(patientId, fileName);
-                return Results.NoContent();
-            }
-            catch (ClinicalAttachmentNotFoundException)
-            {
-                return Results.NotFound();
-            }
-            catch (PatientNotFoundException)
-            {
-                return Results.NotFound();
-            }
-        });
+                try
+                {
+                    await patientService.DeleteAttachmentAsync(patientId, fileName);
+                    return Results.NoContent();
+                }
+                catch (ClinicalAttachmentNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+                catch (PatientNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+            })
+        .RequireAuthorization();
 
     app.Run();
 }

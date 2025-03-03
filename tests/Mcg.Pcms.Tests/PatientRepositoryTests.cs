@@ -198,9 +198,9 @@ public class PatientRepositoryTests
     private PatientRepository GetRepository()
     {
         // We want a unique in-memory database for each test. 
-        var options = new DbContextOptionsBuilder<PatientDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        var dbContext = new PatientDbContext(options);
+        var dbContext = new AppDbContext(options);
 
         return new PatientRepository(dbContext);
     }
