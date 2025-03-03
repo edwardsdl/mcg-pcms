@@ -170,7 +170,7 @@ public class PatientRepositoryTests
         var repository = GetRepository();
         var patient = GetJohnDoe();
         const string fileName = "Clinical Attachment";
-        const string contentType = "application/pdf";
+        const string contentType = "text/plain";
         
         await repository.AddPatientAsync(patient);
         await repository.AddClinicalAttachmentAsync(patient, fileName, contentType, GetClinicalAttachment());
@@ -226,8 +226,8 @@ public class PatientRepositoryTests
             Age = 60,
             EmailAddress = "jane.doe@example.com",
             MedicalHistory = "No pre-existing conditions.",
-            Name = "John Doe",
-            PhoneNumber = "(888) 555-1212"
+            Name = "Jane Doe",
+            PhoneNumber = "(888) 555-1234"
         };
     }
 
