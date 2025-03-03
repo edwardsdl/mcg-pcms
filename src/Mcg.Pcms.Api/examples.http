@@ -1,0 +1,92 @@
+@baseUri = http://localhost:5016
+@email = azurediamond@example.com
+@password = Hunter2!
+
+### Register
+POST {{baseUri}}/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Login
+POST {{baseUri}}/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+    client.global.set("token", response.body.accessToken);
+%}
+
+### Create a patient
+POST {{baseUri}}/patients
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "John Doe",
+  "age": 65,
+  "address": "123 Main Street",
+  "phoneNumber": "(888) 555-1212",
+  "emailAddress": "john.doe@example.com",
+  "medicalHistory": "No pre-existing conditions."
+}
+
+> {%
+    client.global.set("patientId", response.body.id);
+%}
+
+### Get all patients
+GET {{baseUri}}/patients
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get the most recently created patient
+GET {{baseUri}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update the most recently created patient
+PUT {{baseUri}}/patients/{{patientId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Jane Doe",
+  "age": 60,
+  "address": "123 Main Street",
+  "phoneNumber": "(888) 555-1234",
+  "emailAddress": "jane.doe@example.com",
+  "medicalHistory": "No pre-existing conditions."
+}
+
+### Delete the most recently created patient
+DELETE {{baseUri}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
+
+### Upload a clinical attachment to the most recently created patient 
+POST {{baseUri}}/patients/{{patientId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary123
+
+--boundary123
+Content-Disposition: form-data; name="file"; filename="clinical-attachment.txt"
+Content-Type: text/plain
+
+Clinical Attachment
+--boundary123--
+
+### Get the most recently created clinical attachment
+GET {{baseUri}}/patients/{{patientId}}/attachments/clinical-attachment.txt
+Authorization: Bearer {{token}}
+Accept: application/octet-stream
+
+### Delete the most recently created clinical attachment
+DELETE {{baseUri}}/patients/{{patientId}}/attachments/clinical-attachment.txt
+Authorization: Bearer {{token}}

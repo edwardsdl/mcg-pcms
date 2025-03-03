@@ -23,14 +23,6 @@ dotnet run --project src/Mcg.Pcms.Api
 
 Once the application is running, the API will be available at `http://localhost:5016`.
 
-### Running the Test Suite
-
-To execute the test suite and ensure the system is functioning correctly, use the following command:
-
-```sh
-dotnet test
-```
-
 ### Running with Docker
 
 Alternatively, it's possible to use the Dockerfile included in the `deploy/` directory to run the application. From the
@@ -51,6 +43,51 @@ The API will be available at `http://localhost:5016`.
 The container runs the application using a non-root user for improved security. This reduces the attack surface and
 follows best practices for containerized applications.
 
+### Authentication and Accessing Endpoints
+
+Many of the endpoints this API exposes require authentication. Before making requests to these endpoints, you must
+register an account and obtain a bearer token.
+
+First, send a POST request to the registration endpoint:
+
+```http request
+POST http://localhost:5016/register
+Content-Type: application/json
+
+{
+  "email": "azurediamond@example.com",
+  "password": "Hunter2!"
+}
+```
+
+Now that you have created a new user, request a bearer token by sending a POST request to the login endpoint:
+
+```http request
+POST http://localhost:5016/login
+Content-Type: application/json
+
+{
+  "email": "azurediamond@example.com",
+  "password": "Hunter2!"
+}
+```
+
+The response will include a field named `accessToken`. You will need to include this in the authorization header for all
+protected endpoints.
+
+You can use the provided .http file to easily test API endpoints if your IDE or HTTP client supports it. Simply open the
+.http file, run requests in order, and the authentication token will be automatically retrieved and applied to
+subsequent requests.
+
+### Running the Test Suite
+
+The test suite covers both unit tests and API endpoint tests. To execute these and ensure the system is functioning
+correctly, use the following command:
+
+```sh
+dotnet test
+```
+
 ## Design
 
 ### High-Level Architecture
@@ -70,12 +107,15 @@ It uses Entity Framework Core with an in-memory database for storing patient rec
 storage using a `ConcurrentDictionary`, which lazily initializes storage upon the first attachment being added.
 
 ### C4 System Context Diagram
+
 ![system_context_diagram.png](docs/system_context_diagram.png)
 
 ### C4 Container Diagram
+
 ![container_diagram.png](docs/container_diagram.png)
 
 ### C4 Component Diagram
+
 ![component_diagram.png](docs/component_diagram.png)
 
 ## Design Considerations & Trade-Offs
@@ -102,7 +142,7 @@ Finally, Minimal API was chosen over traditional MVC controllers to reduce boile
 
 Although the current implementation is functional, there is significant room for improvement.
 
-A durable storage solution, such as PostgreSQL would provide better data retention and support larger-scale usage.
+A durable storage solution, such as PostgreSQL, would provide better data retention and support larger-scale usage.
 Similarly, integrating real blob storage would be more appropriate for persisting binary data.
 
 Introducing "soft" deletes would allow patient records to be marked as inactive rather than permanently deleted. This
